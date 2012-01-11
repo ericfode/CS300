@@ -1,0 +1,12 @@
+package com.efode.linkedList;
+
+import java.io.Serializable;
+import java.util.Collection;
+import java.util.Deque;
+import java.util.List;
+import java.util.Queue;
+
+public class LinkedListList implements Serializable, Cloneable, Iterable<T>,
+		Collection<E>, Deque<E>, List<E>, Queue<E> {
+
+}
