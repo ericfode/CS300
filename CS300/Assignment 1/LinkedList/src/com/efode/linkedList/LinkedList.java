@@ -28,29 +28,10 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 			this.value = value;
 			this.dummy = dummy;
 		}
-	
-		public void remove() throws OperationNotSupportedException
-		{
-			if(this.dummy)
-			{
-				//don't let the dummy remove it's self
-				throw new OperationNotSupportedException();
-			}
-			else
-			{
-				next.last = this.last;
-				last.next = this.next;
-			}
-		}
+
 		
 		//only support moving node to different locations in the same list
-		public void move(Node<T> newNext, Node<T> newLast)
-		{
-			next.last = this.last;
-			last.next = this.next;
-			this.next = newNext;
-			this.last = newLast;
-		}
+
 		
 		public boolean exsists(T value)
 		{
@@ -108,6 +89,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 			}
 		}
 		
+
 		//returns reference to new node
 		public Node<T> addNext(int index,Node<T> newNode) throws IndexOutOfBoundsException
 		{
@@ -160,6 +142,28 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		this.dummy = new Node<E>(null,this, true);
 		this.dummy.last = this.dummy;
 		this.dummy.next = this.dummy;
+	}
+	
+	public void remove(Node<E> node) throws OperationNotSupportedException
+	{
+		if(node.dummy)
+		{
+			//don't let the dummy remove it's self
+			throw new OperationNotSupportedException();
+		}
+		else
+		{
+			node.next.last = node.last;
+			node.last.next = node.next;
+		}
+	}
+	
+	public void move(Node<E> moveNode, Node<E> newNext, Node<E> newLast)
+	{
+		moveNode.next.last = moveNode.last;
+		moveNode.last.next = moveNode.next;
+		moveNode.next = newNext;
+		moveNode.last = newLast;
 	}
 	
 	public LinkedList(Collection<? extends E> c)
