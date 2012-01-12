@@ -32,101 +32,19 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		
 		//only support moving node to different locations in the same list
 
-		
-		public boolean exsists(T value)
-		{
-			if(this.dummy)
-			{
-				return false;
-			}
-			if(this.value == value)
-			{
-				return true;
-			}
-			else
-			{
-				return this.next.exsists(value);
-			}
-		}
-		
-		public Node<T> find(T value)
-		{
-			if(this.dummy)
-			{
-				return this;
-			}
-			if(this.value == value)
-			{
-				return this;
-			}
-			else
-			{
-				return this.next.find(value);
-			}
-		}
+
+
 		
 		@Override
 		public boolean equals(Object o) {
 			return (this.value == ((Node<T>)o).value);
 		}
 		
-		public Node<T> get(int index) throws IndexOutOfBoundsException
-		{
 
-			//check to make sure that the beginning or the end of the list has not been reached
-			if(this.dummy)
-			{
-				throw new IndexOutOfBoundsException();
-			}
-			
-			if(index== 0)
-			{
-				return this;
-			}
-			else
-			{
-				return this.next.get(index-1);
-			}
-		}
 		
 
-		//returns reference to new node
-		public Node<T> addNext(int index,Node<T> newNode) throws IndexOutOfBoundsException
-		{
-			//check to make sure that the beginning or the end of the list has not been reached
-			if(this.dummy)
-			{
-				throw new IndexOutOfBoundsException();
-			}
-			
-			
-			if(index < 0)
-			{
-				return this.last.addNext(index+1, newNode);
-			}
-			else if(index > 0)
-			{
-				return this.next.addNext(index-1, newNode);
-			}
-			
-			//if(index == 0)
-			else
-			{
-				newNode.last = this;
-				newNode.next = this.next;
-				
-				this.next.last = newNode;
-				this.next = newNode;
-				return newNode;
-			}
-		}
-		public int getIndex()
-		{
-			//recurse through list until the dummy node is reached then add up
-			//the number of steps
-			//return -1 this is the dummy node
-			return this.dummy ? -1 : this.last.getIndex() + 1;
-		}
+
+
 		
 	}
 
@@ -144,7 +62,99 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		this.dummy.next = this.dummy;
 	}
 	
-	public void remove(Node<E> node) throws OperationNotSupportedException
+	public int getNodeIndex(Node<E> cur)
+	{
+		//recurse through list until the dummy node is reached then add up
+		//the number of steps
+		//return -1 this is the dummy node
+		return cur.dummy ? -1 : getNodeIndex(cur.last) + 1;
+	}
+	
+	//returns reference to new node
+	public Node<E> addNode(Node<E> cur, int index,Node<E> newNode) throws IndexOutOfBoundsException
+	{
+		//check to make sure that the beginning or the end of the list 
+		//has not been reached if the list is being iterated
+		if(cur.dummy && index != 0)
+		{
+			throw new IndexOutOfBoundsException();
+		}
+		
+		
+		if(index < 0)
+		{
+			return addNode(cur.last, index+1, newNode);
+		}
+		else if(index > 0)
+		{
+			return addNode(cur.next, index-1, newNode);
+		}
+		
+		//if(index == 0)
+		else
+		{
+			newNode.last = cur;
+			newNode.next = cur.next;
+			
+			cur.next.last = newNode;
+			cur.next = newNode;
+			return newNode;
+		}
+	}
+	
+	public Node<E> getNode(Node<E> cur, int index) throws IndexOutOfBoundsException
+	{
+
+		//check to make sure that the beginning or the end of the list has not been reached
+		if(cur.dummy)
+		{
+			throw new IndexOutOfBoundsException();
+		}
+		
+		if(index== 0)
+		{
+			return cur;
+		}
+		else
+		{
+			return getNode(cur.next,index-1);
+		}
+	}
+	
+	public Node<E> findNode(Node<E> cur, E value)
+	{
+		if(cur.dummy)
+		{
+			return cur;
+		}
+		if(cur.value == value)
+		{
+			return cur;
+		}
+		else
+		{
+			return findNode(cur.next,value);
+		}
+	}
+	
+	public boolean nodeExsists(Node<E> cur,E value)
+	{
+		if(cur.dummy)
+		{
+			return false;
+		}
+		if(cur.value == value)
+		{
+			return true;
+		}
+		else
+		{
+			return nodeExsists(cur.next, value);
+		}
+	}
+	
+	
+	public void removeNode(Node<E> node) throws OperationNotSupportedException
 	{
 		if(node.dummy)
 		{
@@ -158,7 +168,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		}
 	}
 	
-	public void move(Node<E> moveNode, Node<E> newNext, Node<E> newLast)
+	public void moveNode(Node<E> moveNode, Node<E> newNext, Node<E> newLast)
 	{
 		moveNode.next.last = moveNode.last;
 		moveNode.last.next = moveNode.next;
@@ -172,7 +182,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 	@Override
 	public void add(int index, E item) {
-		dummy.addNext(index, new Node<E>(item,this, false));
+		addNode(dummy,index, new Node<E>(item,this, false));
 		size++;
 	}
 
@@ -198,20 +208,26 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public E get(int index) {
-		return dummy.next.get(index).value;
+		return getNode(dummy.next, index).value;
 	}
 
 	@Override
 	public int indexOf(Object item) {
 		E itemCast = (E)item;
-		return dummy.next.find(itemCast).getIndex();
+		return getNodeIndex(findNode(dummy.next, itemCast));
 	}
 
 	@Override
 	public int lastIndexOf(Object item) {
 		E itemCast = (E)item;
-		Node<E> curItem;
-		while(curItem = )
+		Node<E> curItem = findNode(dummy.next, itemCast);
+		Node<E> last = findNode(dummy.next, itemCast);
+		while(curItem.dummy == false )
+		{
+			last = curItem;
+			curItem = findNode(curItem, itemCast);
+		}
+		return getNodeIndex(last);
 	}
 
 	@Override
@@ -227,15 +243,27 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 
 	@Override
-	public E remove(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public E remove(int index) {
+		try {
+			Node<E> node = getNode(this.dummy, index);
+			E val = node.value;
+			removeNode(node);
+			return val;
+		} catch (OperationNotSupportedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		} catch (IndexOutOfBoundsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
 	}
 
 	@Override
-	public E set(int arg0, E arg1) {
-		// TODO Auto-generated method stub
-		return null;
+	public E set(int index, E value) {
+		getNode(this.dummy,index).value = value;
+		return value;
 	}
 
 	@Override
@@ -245,15 +273,13 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 
 	@Override
-	public void addFirst(E arg0) {
-		// TODO Auto-generated method stub
-		
+	public void addFirst(E value) {
+		add(value);
 	}
 
 	@Override
-	public void addLast(E arg0) {
-		// TODO Auto-generated method stub
-		
+	public void addLast(E item) {
+		addNode(this.dummy, size-1, new Node<E>(item,this, false));
 	}
 
 	@Override
@@ -269,14 +295,12 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public E getFirst() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.dummy.next.value;
 	}
 
 	@Override
 	public E getLast() {
-		// TODO Auto-generated method stub
-		return null;
+		return this.dummy.last.value;
 	}
 
 	@Override
@@ -340,9 +364,8 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 
 	@Override
-	public void push(E arg0) {
-		// TODO Auto-generated method stub
-		
+	public void push(E value) {
+		add(value);
 	}
 
 	@Override
@@ -353,8 +376,9 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public E removeFirst() {
-		// TODO Auto-generated method stub
-		return null;
+		E value = getNode(this.dummy, 0).value;
+		remove(0);
+		return value;
 	}
 
 	@Override
