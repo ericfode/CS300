@@ -1,3 +1,7 @@
+/// Did the following extra credit
+// Used Generics
+
+
 package com.efode.linkedList;
 
 import java.io.Serializable;
@@ -6,6 +10,7 @@ import java.util.Deque;
 import java.util.Iterator;
 import java.util.List;
 import java.util.ListIterator;
+import java.util.NoSuchElementException;
 import java.util.Queue;
 
 import javax.naming.OperationNotSupportedException;
@@ -13,7 +18,46 @@ import javax.naming.OperationNotSupportedException;
 public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		Collection<E>, Deque<E>, List<E>, Queue<E> {
 
-	public class Node<T>{
+	public class LinkedListIterator<T> implements Iterator<T>{
+		private Node<T> cur;
+		private LinkedList<T> list;
+		public LinkedListIterator(Node<T> dummy)
+		{
+			this.cur =  dummy;
+			this.list = dummy.list;			
+		}
+		
+		@Override
+		public boolean hasNext() {
+			if(cur.next.dummy)
+			{
+				return false;
+			}else
+			{
+				return true;
+			}
+		}
+
+		@Override
+		public T next() {
+			if(hasNext())
+			{
+				cur = cur.next;		
+				return cur.value;
+			}else
+			{
+				throw new NoSuchElementException("End of list");
+			}
+			
+		}
+
+		@Override
+		public void remove() {
+			throw new UnsupportedOperationException("No Remove availble");
+		}
+		
+	}
+	private class Node<T>{
 		public LinkedList<T> list;
 		public T value;
 		public Node<T> next;
@@ -38,14 +82,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		@Override
 		public boolean equals(Object o) {
 			return (this.value == ((Node<T>)o).value);
-		}
-		
-
-		
-
-
-
-		
+		}		
 	}
 
 	private Node<E> dummy;
@@ -75,7 +112,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	{
 		//check to make sure that the beginning or the end of the list 
 		//has not been reached if the list is being iterated
-		if(cur.dummy && index != 0)
+		if(index > size)
 		{
 			throw new IndexOutOfBoundsException();
 		}
@@ -98,6 +135,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 			
 			cur.next.last = newNode;
 			cur.next = newNode;
+			size++;
 			return newNode;
 		}
 	}
@@ -178,12 +216,14 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	
 	public LinkedList(Collection<? extends E> c)
 	{
-		
+		this.dummy = new Node<E>(null,this, true);
+		this.dummy.next = this.dummy;
+		this.dummy.last = this.dummy;
+		addAll(0, c);
 	}
 	@Override
 	public void add(int index, E item) {
 		addNode(dummy,index, new Node<E>(item,this, false));
-		size++;
 	}
 
 	@Override
@@ -224,16 +264,18 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		Node<E> last = findNode(dummy.next, itemCast);
 		while(curItem.dummy == false )
 		{
-			last = curItem;
+			curItem = curItem.next;
 			curItem = findNode(curItem, itemCast);
+			last = curItem;
+			
 		}
 		return getNodeIndex(last);
 	}
 
 	@Override
 	public ListIterator<E> listIterator() {
-		// TODO Auto-generated method stub
-		return null;
+		LinkedListIterator<E> iterator = new LinkedListIterator<E>(this.dummy);
+		return (ListIterator<E>) iterator;
 	}
 
 	@Override
@@ -267,8 +309,8 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 
 	@Override
-	public List<E> subList(int arg0, int arg1) {
-		// TODO Auto-generated method stub
+	public List<E> subList(int fromIndex, int toIndex) {
+		//TODO: figure out how to implement a sub list
 		return null;
 	}
 
@@ -279,7 +321,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public void addLast(E item) {
-		addNode(this.dummy, size-1, new Node<E>(item,this, false));
+		addNode(this.dummy, size, new Node<E>(item,this, false));
 	}
 
 	@Override
@@ -289,8 +331,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public E element() {
-		// TODO Auto-generated method stub
-		return null;
+		return getFirst();
 	}
 
 	@Override
@@ -304,74 +345,88 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 
 	@Override
-	public boolean offer(E arg0) {
-		// TODO Auto-generated method stub
+	public boolean offer(E value) {
+		addLast(value);
+		return true;
+	}
+
+	@Override
+	public boolean offerFirst(E value) {
+		addFirst(value);
 		return false;
 	}
 
 	@Override
-	public boolean offerFirst(E arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean offerLast(E arg0) {
-		// TODO Auto-generated method stub
+	public boolean offerLast(E value) {
+		addLast(value);
 		return false;
 	}
 
 	@Override
 	public E peek() {
-		// TODO Auto-generated method stub
-		return null;
+		return getFirst();
 	}
 
 	@Override
 	public E peekFirst() {
-		// TODO Auto-generated method stub
-		return null;
+		if(size() == 0)
+		{
+			return null;
+		}else
+		{
+			E value = getFirst();
+			remove(0);
+			return value;
+		}
 	}
 
 	@Override
 	public E peekLast() {
-		// TODO Auto-generated method stub
-		return null;
+		if(size() == 0)
+		{
+			return null;
+		}else
+		{
+			E value = getLast();
+			removeLast();
+			return value;
+		}
 	}
 
 	@Override
 	public E poll() {
-		// TODO Auto-generated method stub
-		return null;
+		if(size() == 0)
+		{
+			throw new NoSuchElementException("List is empty");
+		}
+		return peekFirst();
 	}
 
 	@Override
 	public E pollFirst() {
-		// TODO Auto-generated method stub
-		return null;
+		return peekFirst();
 	}
 
 	@Override
 	public E pollLast() {
-		// TODO Auto-generated method stub
-		return null;
+		return peekLast();
 	}
 
 	@Override
 	public E pop() {
-		// TODO Auto-generated method stub
-		return null;
+		return peekFirst();
 	}
 
 	@Override
 	public void push(E value) {
-		add(value);
+		addFirst(value);
 	}
 
 	@Override
 	public E remove() {
-		// TODO Auto-generated method stub
-		return null;
+		E val = getFirst();
+		removeFirst();
+		return val;
 	}
 
 	@Override
@@ -382,87 +437,142 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 
 	@Override
-	public boolean removeFirstOccurrence(Object arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public E removeLast() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public boolean removeLastOccurrence(Object arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean add(E arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean addAll(Collection<? extends E> arg0) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void clear() {
-		// TODO Auto-generated method stub
+	public boolean removeFirstOccurrence(Object value) {
+		int index =indexOf(value);
+		if(index != -1)
+		{
+			remove(index);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 		
 	}
 
 	@Override
-	public boolean contains(Object arg0) {
-		// TODO Auto-generated method stub
-		return false;
+	public E removeLast() {
+		E val = getLast();
+		removeLast();
+		return val;
 	}
 
 	@Override
-	public boolean containsAll(Collection<?> arg0) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean removeLastOccurrence(Object value) {
+		int index = lastIndexOf(value);
+		if(index != -1)
+		{
+			remove(index);
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
+
+	@Override
+	public boolean add(E value) {
+		addLast(value);
+		return true;
+	}
+
+	@Override
+	public boolean addAll(Collection<? extends E> values) {
+		return addAll(0, values); 
+	}
+
+	@Override
+	public void clear() {
+		this.dummy.next = this.dummy;
+		this.dummy.last = this.dummy;
+		this.size = 0;
+	}
+
+	@Override
+	public boolean contains(Object value) {
+		if(findNode(this.dummy, (E)value).dummy != true)
+		{
+			return true;
+		}
+		else
+		{
+			return false;	
+		}
+	}
+
+	@Override
+	public boolean containsAll(Collection<?> values) {
+		for(Object o : values){
+			if(contains(o) != true)
+			{
+				return false;
+			}
+		}
+		return true;
 	}
 
 	@Override
 	public boolean isEmpty() {
-		// TODO Auto-generated method stub
-		return false;
+		
+		return this.size == 0;
 	}
 
 	@Override
-	public boolean remove(Object arg0) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean remove(Object value) {
+		int index = indexOf(value);
+		if(index == -1)
+		{
+			return false;
+		}
+		else
+		{
+			remove(index);
+			return true;
+		}
 	}
 
 	@Override
-	public boolean removeAll(Collection<?> arg0) {
-		// TODO Auto-generated method stub
-		return false;
+	public boolean removeAll(Collection<?> values) {
+		boolean returnVal = true;
+		for(Object o: values)
+		{
+			if(!remove(o))
+			{
+				returnVal = false;
+			}
+		}
+		return returnVal;
 	}
 
 	@Override
-	public boolean retainAll(Collection<?> arg0) {
-		// TODO Auto-generated method stub
+	public boolean retainAll(Collection<?> values) {
+		for(E val: this)
+		{
+			if(values.contains(val) == false)
+			{
+				remove(val);
+			}
+		}
 		return false;
 	}
 
 	@Override
 	public int size() {
-		// TODO Auto-generated method stub
-		return 0;
+		return size;
 	}
 
 	@Override
 	public Object[] toArray() {
-		// TODO Auto-generated method stub
-		return null;
+		Object[] vals = new Object[size];
+		int i = 0;
+		for(E val: this)
+		{
+			vals[i]	= val;
+			i++;
+		}
+		return vals;
 	}
 
 	@SuppressWarnings("hiding")
@@ -473,24 +583,40 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public Iterator<E> iterator() {
-		// TODO Auto-generated method stub
-		return null;
+		return new LinkedListIterator<E>(this.dummy);
 	}
 	
 	@Override
 	public String toString(){
-	
-		return null;
+		String out = "";
+		for(E val: this)
+		{
+			out += val.toString()+ "\n";
+		}
+		return out;
 	}
 	
 	@Override
 	public int hashCode(){
-		return 0;
+		int hashCode = 0;
+		for(E val: this)
+		{
+			hashCode+= val.hashCode();
+		}
+		return hashCode;
 	}
 	
 	@Override
 	public boolean equals(Object o){
-		return false;
+		try
+		{
+			LinkedList listCast = (LinkedList)o;
+			return containsAll(listCast);
+		}
+		catch(Exception e)
+		{
+			return false;
+		}
 	}
 }
 
