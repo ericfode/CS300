@@ -140,13 +140,13 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		}
 	}
 	
-	public Node<E> getNode(Node<E> cur, int index) throws IndexOutOfBoundsException
+	public Node<E> getNode(Node<E> cur, int index)
 	{
 
 		//check to make sure that the beginning or the end of the list has not been reached
 		if(cur.dummy)
 		{
-			throw new IndexOutOfBoundsException();
+			throw new NoSuchElementException();
 		}
 		
 		if(index== 0)
@@ -203,6 +203,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		{
 			node.next.last = node.last;
 			node.last.next = node.next;
+			this.size--;
 		}
 	}
 	
@@ -262,11 +263,15 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		E itemCast = (E)item;
 		Node<E> curItem = findNode(dummy.next, itemCast);
 		Node<E> last = findNode(dummy.next, itemCast);
+		//until the current item is the dummy node
 		while(curItem.dummy == false )
 		{
-			curItem = curItem.next;
-			curItem = findNode(curItem, itemCast);
+			//save the current node
 			last = curItem;
+			//incerment the curNode
+			//search from cur node on 
+			curItem = findNode(curItem.next, itemCast);
+			
 			
 		}
 		return getNodeIndex(last);
@@ -287,24 +292,23 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	@Override
 	public E remove(int index) {
 		try {
-			Node<E> node = getNode(this.dummy, index);
+			Node<E> node = getNode(this.dummy.next, index);
 			E val = node.value;
 			removeNode(node);
 			return val;
 		} catch (OperationNotSupportedException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
 			return null;
 		} catch (IndexOutOfBoundsException e) {
 			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+	
+			throw new NoSuchElementException();
 		}
 	}
 
 	@Override
 	public E set(int index, E value) {
-		getNode(this.dummy,index).value = value;
+		getNode(this.dummy.next,index).value = value;
 		return value;
 	}
 
@@ -316,7 +320,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public void addFirst(E value) {
-		add(value);
+		addNode(this.dummy,0,new Node<E>(value,this,false));
 	}
 
 	@Override
@@ -353,13 +357,13 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	@Override
 	public boolean offerFirst(E value) {
 		addFirst(value);
-		return false;
+		return true;
 	}
 
 	@Override
 	public boolean offerLast(E value) {
 		addLast(value);
-		return false;
+		return true;
 	}
 
 	@Override
@@ -375,7 +379,6 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		}else
 		{
 			E value = getFirst();
-			remove(0);
 			return value;
 		}
 	}
@@ -388,7 +391,6 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		}else
 		{
 			E value = getLast();
-			removeLast();
 			return value;
 		}
 	}
@@ -397,24 +399,35 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	public E poll() {
 		if(size() == 0)
 		{
-			throw new NoSuchElementException("List is empty");
+			return null;
 		}
-		return peekFirst();
+
+		E value = getFirst();
+		removeFirst();
+		return value;
+		
 	}
 
 	@Override
 	public E pollFirst() {
-		return peekFirst();
+		return poll();
 	}
 
 	@Override
 	public E pollLast() {
-		return peekLast();
+
+		if(size() == 0)
+		{
+			return null;
+		}
+		E value = getLast();
+		removeLast();
+		return value;
 	}
 
 	@Override
 	public E pop() {
-		return peekFirst();
+		return poll();
 	}
 
 	@Override
@@ -431,7 +444,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public E removeFirst() {
-		E value = getNode(this.dummy, 0).value;
+		E value = getNode(this.dummy.next, 0).value;
 		remove(0);
 		return value;
 	}
@@ -454,7 +467,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	@Override
 	public E removeLast() {
 		E val = getLast();
-		removeLast();
+		remove(size-1);
 		return val;
 	}
 
@@ -490,9 +503,10 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		this.size = 0;
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public boolean contains(Object value) {
-		if(findNode(this.dummy, (E)value).dummy != true)
+		if(findNode(this.dummy.next, (E)value).dummy != true)
 		{
 			return true;
 		}
@@ -548,14 +562,17 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public boolean retainAll(Collection<?> values) {
+		boolean returnVal = false;
 		for(E val: this)
 		{
+			//if the value is not in the retain list
 			if(values.contains(val) == false)
 			{
 				remove(val);
+				returnVal = true;
 			}
 		}
-		return false;
+		return returnVal;
 	}
 
 	@Override

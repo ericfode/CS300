@@ -47,13 +47,20 @@ public class AddTests {
 		String[] expected = {"One", "Two", "Three", "Four"};
 		assertArrayEquals("Testing addLast", expected, strings.toArray());
 	}
+	@Test
+	public void testAddFirst() {
+		LinkedList<String> strings = new LinkedList<String>(testStrings);
+		strings.addFirst("Four");
+		String[] expected = {"Four","One", "Two", "Three"};
+		assertArrayEquals("Testing First", expected, strings.toArray());
+	}
 	
 
 	@Test
 	public void testPush() {
 		LinkedList<String> strings = new LinkedList<String>(testStrings);
 		strings.push("Four");
-		String[] expected = {"One", "Two", "Three", "Four"};
+		String[] expected = {"Four", "One", "Two", "Three", };
 		assertArrayEquals("Testing addLast", expected, strings.toArray());
 	}
 

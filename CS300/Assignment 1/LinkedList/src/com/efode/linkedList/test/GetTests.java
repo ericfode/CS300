@@ -73,7 +73,7 @@ public class GetTests {
 		strings.add("Three");
 		strings.add("Four");
 		strings.add("Five");
-		assertEquals("TestingGetFirst","One",strings.getLast());
+		assertEquals("TestingGetFirst","Five",strings.getLast());
 	}
 
 	@Test
@@ -123,10 +123,10 @@ public class GetTests {
 
 	@Test
 	public void testToArray() {
-		String[] stringsOut = (String[]) strings.toArray();
+		Object[] stringsOut =  strings.toArray();
 		for(int i = 0; i< stringsOut.length; i++)
 		{
-			assertEquals(stringsOut[i], strings.get(0));
+			assertEquals(stringsOut[i], strings.get(i));
 		}
 	}
 
