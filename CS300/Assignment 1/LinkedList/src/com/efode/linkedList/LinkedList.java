@@ -5,6 +5,7 @@
 package com.efode.linkedList;
 
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Deque;
 import java.util.Iterator;
@@ -114,7 +115,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		//has not been reached if the list is being iterated
 		if(index > size)
 		{
-			throw new IndexOutOfBoundsException();
+			throw new IndexOutOfBoundsException("index out of bounds");
 		}
 		
 		
@@ -144,9 +145,13 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	{
 
 		//check to make sure that the beginning or the end of the list has not been reached
-		if(cur.dummy)
+		if(cur.dummy && (index > size || index < 0))
 		{
-			throw new NoSuchElementException();
+			throw new IndexOutOfBoundsException("index out of bounds");
+		}
+		if(size ==  0)
+		{
+			throw new NoSuchElementException("List is empty");
 		}
 		
 		if(index== 0)
@@ -197,7 +202,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		if(node.dummy)
 		{
 			//don't let the dummy remove it's self
-			throw new OperationNotSupportedException();
+			throw new OperationNotSupportedException("remove node on dummy not supported");
 		}
 		else
 		{
@@ -217,6 +222,10 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	
 	public LinkedList(Collection<? extends E> c)
 	{
+		if(c == null)
+		{
+			throw new NullPointerException("collection is null");
+		}
 		this.dummy = new Node<E>(null,this, true);
 		this.dummy.next = this.dummy;
 		this.dummy.last = this.dummy;
@@ -229,7 +238,10 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public boolean addAll(int index, Collection<? extends E> col) {
-
+		if(col == null)
+		{
+			throw new NullPointerException("collection is null");
+		}
 		try
 		{
 			for(E item : col)
@@ -284,9 +296,9 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 	}
 
 	@Override
-	public ListIterator<E> listIterator(int arg0) {
-		// TODO Auto-generated method stub
-		return null;
+	public ListIterator<E> listIterator(int index) {
+		LinkedListIterator<E> iterator = new LinkedListIterator<E>(getNode(this.dummy.next,index));
+		return (ListIterator<E>) iterator;
 	}
 
 	@Override
@@ -297,12 +309,7 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 			removeNode(node);
 			return val;
 		} catch (OperationNotSupportedException e) {
-			// TODO Auto-generated catch block
 			return null;
-		} catch (IndexOutOfBoundsException e) {
-			// TODO Auto-generated catch block
-	
-			throw new NoSuchElementException();
 		}
 	}
 
@@ -314,8 +321,20 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public List<E> subList(int fromIndex, int toIndex) {
-		//TODO: figure out how to implement a sub list
-		return null;
+		if(fromIndex > toIndex)
+		{
+			throw new IllegalArgumentException("toIndex is greater the fromIndex");
+		}
+		if(fromIndex == toIndex)
+		{
+			return new LinkedList<E>(Arrays.asList(this.get(toIndex)));
+		}
+		else
+		{
+			List<E> list = subList(fromIndex+1,toIndex);
+			list.add(0, this.get(toIndex));
+			return list;
+		}
 	}
 
 	@Override
@@ -340,35 +359,63 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 
 	@Override
 	public E getFirst() {
-		return this.dummy.next.value;
+		return getNode(this.dummy.next,0).value;
 	}
 
 	@Override
 	public E getLast() {
-		return this.dummy.last.value;
+		if(size == 0)
+		{
+			throw new NoSuchElementException("No items in list");
+		}
+		return getNode(this.dummy.next,size-1).value;
 	}
 
 	@Override
 	public boolean offer(E value) {
+		try
+		{
 		addLast(value);
 		return true;
+		}catch(Exception e)
+		{
+			return false;
+		}
 	}
 
 	@Override
 	public boolean offerFirst(E value) {
+		try
+		{
 		addFirst(value);
 		return true;
+		}catch(Exception e)
+		{
+			return false;
+		}
 	}
 
 	@Override
 	public boolean offerLast(E value) {
+		try
+		{
 		addLast(value);
 		return true;
+		}catch(Exception e)
+		{
+			return false;
+		}
 	}
 
 	@Override
 	public E peek() {
+		try
+		{
 		return getFirst();
+		}catch(Exception e)
+		{
+			return null;
+		}
 	}
 
 	@Override
@@ -634,6 +681,12 @@ public class LinkedList<E> implements Serializable, Cloneable, Iterable<E>,
 		{
 			return false;
 		}
+	}
+	
+	@Override
+	public Object clone()
+	{
+		return new LinkedList<E>(this);
 	}
 }
 
