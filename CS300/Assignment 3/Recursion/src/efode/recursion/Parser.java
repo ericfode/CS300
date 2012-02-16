@@ -19,7 +19,7 @@ public class Parser {
 	
 	public boolean isParen(String input, int pos)
 	{
-		if(input.substring(pos,pos+1).matches("(\\()")){return true;}
+		if(pos+1 <= input.length()&&input.substring(pos,pos+1).matches("(\\()")){return true;}
 		else{return false;}
 	}
 	
@@ -31,7 +31,7 @@ public class Parser {
 	
 	public boolean isCloseParen(String input, int pos)
 	{
-		if(input.substring(pos,pos+1).matches("(\\))")){return true;}
+		if(pos+1 <= input.length()&&input.substring(pos,pos+1).matches("(\\))")){return true;}
 		else{return false;}
 	}
 	
@@ -43,7 +43,7 @@ public class Parser {
 	
 	public boolean isLetter(String input, int pos)
 	{
-		if(input.substring(pos,pos+1).matches("([A-Z])")){return true;}
+		if(pos+1 <= input.length()&&input.substring(pos,pos+1).matches("([A-Z])")){return true;}
 		else{return false;}
 	}
 	
@@ -56,7 +56,7 @@ public class Parser {
 	
 	public boolean isPlusMinus(String input, int pos)
 	{
-		if(input.substring(pos,pos+1).matches("(\\+|\\-)")){return true;}
+		if(pos+1 <= input.length()&&input.substring(pos,pos+1).matches("(\\+|\\-)")){return true;}
 		else{return false;}
 	}
 	
@@ -68,7 +68,7 @@ public class Parser {
 	
 	public boolean isMultiplyDivide(String input, int pos)
 	{
-		if(input.substring(pos,pos+1).matches("(\\*|\\/)")){return true;}
+		if(pos+1 <= input.length()&&input.substring(pos,pos+1).matches("(\\*|\\/)")){return true;}
 		else{return false;}
 		
 	}
@@ -87,88 +87,96 @@ public class Parser {
 		if(isParen(input,pos))
 		{
 			pos = takeParen(input,pos);
-			if(pos == input.length()||!isExpression(input,pos)){return false;}
-			pos = takeExpression(input,pos);
-			if(pos == input.length()||!isCloseParen(input,pos)){return false;}
+			if(isExpression(input,pos)){
+				pos = takeExpression(input,pos);
+				if(isCloseParen(input,pos)){return true;}
+			}
 			
 		}
-		return true;
+		return false;
 	}
 	
 	public int takeFactor(String input,int pos)
 	{
-		if(isLetter(input,pos))
-		{
-			return takeLetter(input,pos);
-		}
+		int pos1 =pos;
+		if(isLetter(input,pos))	{return takeLetter(input,pos);}
 		
 		if(isParen(input,pos))
 		{
 			pos = takeParen(input,pos);
-			pos = takeExpression(input, pos);
-			if(pos != input.length()||isCloseParen(input,pos))
-			{
-				pos=takeCloseParen(input,pos);
-				return pos;
+			if(isExpression(input,pos)){
+				pos = takeExpression(input,pos);
+				if(isCloseParen(input,pos)){return takeCloseParen(input,pos);}
 			}
+			
 		}
-		
-		//else
-		return pos;
+		return pos1;
 	}
 	
 	public boolean isTerm(String input, int pos)
 	{
 		
-		boolean case1 = false;
-		case1 = isFactor(input,pos);
+		if(isFactor(input,pos)){
+			pos = takeFactor(input,pos);
+			if(isMultiplyDivide(input,pos)){
+				pos = takeMultiplyDivide(input,pos);
+				if(isFactor(input,pos)){return true ;}
+			}
+			return true;
+			}
 		
-		if(pos == input.length()||!isFactor(input,pos)){return false;}
-		pos = takeFactor(input,pos);
-		if(pos == input.length()||!isMultiplyDivide(input,pos)){return false ||case1;}
-		pos = takeMultiplyDivide(input,pos);
-		if(pos == input.length()||!isFactor(input,pos)){return false || case1;}
-		pos = takeFactor(input,pos);
-		return true; 
+		return false; 
 	}
 	
 	public int takeTerm(String input,int pos)
 	{
-	 	pos = takeFactor(input,pos);
-	 	if(pos == input.length()||!isMultiplyDivide(input, pos)){ return pos;}
-	 	
-	 	pos = takeMultiplyDivide(input, pos);
-	 	pos = takeTerm(input, pos);
-	 	
-	 	return pos;
+		int pos1 = pos;
+		if(isFactor(input,pos)){
+			pos = takeFactor(input,pos);
+			int oldPos = pos;
+			if(isMultiplyDivide(input,pos)){
+				pos = takeMultiplyDivide(input,pos);
+				if(isFactor(input,pos)){return takeFactor(input,pos);}
+			}
+			return oldPos;
+			}
+		
+		return pos1; 
 	}
 	
 	public boolean isExpression(String input, int pos)
 	{
 		
-		boolean case1 = false;
-		case1 = isTerm(input,pos);
 		
-		if(!isTerm(input,pos)){return false || case1;}
-		pos = takeTerm(input,pos);
-		if(pos == input.length()||!isPlusMinus(input,pos)){return false ||case1;}
-		pos = takePlusMinus(input,pos);
-		if(pos == input.length()||!isTerm(input,pos)){return false || case1;}
-		pos = takeTerm(input,pos);
-		return true;
+		if(isTerm(input,pos)){
+			pos = takeTerm(input,pos);
+			if(isPlusMinus(input,pos)){
+				pos = takePlusMinus(input,pos);
+				if(isTerm(input,pos)){
+					return true ;}
+			}
+			return true;
+			}
+		
+		return false;
 		
 	}
 	
 	public int takeExpression(String input,int pos)
 	{
-		//case 1
-		pos = takeTerm(input, pos);
-		if(pos == input.length()||!isPlusMinus(input, pos)){return pos;}
+		int pos1 = pos;
+		if(isTerm(input,pos)){
+			pos = takeTerm(input,pos);
+			int pos2 = pos;
+			if(isPlusMinus(input,pos)){
+				pos = takePlusMinus(input,pos);
+				if(isTerm(input,pos)){
+					return takeTerm(input,pos);}
+			}
+			return pos2;
+			}
 		
-		pos = takePlusMinus(input, pos);
-		pos = takeTerm(input, pos);
-		
-		return pos;
+		return pos1;
 	}
 	
 }
