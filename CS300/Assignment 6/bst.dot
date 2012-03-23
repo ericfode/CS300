@@ -1,0 +1,32 @@
+graph g{
+	node[odering=out];
+	E; A; S; Y; Q; U; E1[label="E"]; S1[label="S"]; T; I; O; N;
+	
+	node[shape=circle,color=black,style=filled,fillcolor=black]; 
+	e2; e3; e4; e5; e6;
+	E--A;
+	E--S;
+	
+	A--e2
+	A--E1;
+	
+	S--Q;
+	S--Y;
+	
+	Q--I;
+	Q--U;
+	
+	Y--S1;
+	Y--e3;
+	
+	I--O;
+	I--e4;
+	
+	U--T;
+	U--e5;
+	
+	O--N;
+	O--e6;
+	
+	
+}
