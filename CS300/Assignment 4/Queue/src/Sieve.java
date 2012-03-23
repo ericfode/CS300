@@ -1,6 +1,8 @@
 import java.util.Queue;
 import java.util.LinkedList;
 import java.util.Iterator;
+//This class uses the Sieve of Eratosthenes to compute all of the prime up to a max number passed in by computeTo
+//Author: Eric Fode (ericfode@gmail.com)
 public class Sieve {
 	
 	private Queue<Integer> ints;
